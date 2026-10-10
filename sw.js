@@ -1,4 +1,4 @@
-const V='sm-v1',SHELL=['./','index.html','manifest.json','icon.svg'];
+const V='sm-v2',SHELL=['./','index.html','manifest.json','icon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)));self.skipWaiting()});
 self.addEventListener('activate',e=>e.waitUntil(clients.claim()));
 const put=(r,res)=>{if(res.ok){const c=res.clone();caches.open(V).then(k=>k.put(r,c))}return res};

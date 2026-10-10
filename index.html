@@ -92,13 +92,14 @@ const heNum=n=>{const T=[[400,'ת'],[300,'ש'],[200,'ר'],[100,'ק'],[90,'צ'],[
 const clean=t=>(t||'').replace(/<[^>]*>/g,'').replace(/\{[פס]\}/g,'').replace(/&nbsp;|&thinsp;/g,' ').trim();
 const cmp=(x,y)=>(x.c-y.c)||(x.v-y.v);
 function applyTheme(){const t=set.theme==='auto'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):set.theme;document.documentElement.dataset.t=t;document.documentElement.style.setProperty('--fs',set.fs+'px')}
-async function j(u){const r=await fetch(API+u);if(!r.ok)throw new Error(r.status);return r.json()}
-async function loadIndex(){
- let idx=load_('sm_idx',null);
- if(!idx){idx=[];for(const[b]of BOOKS){const d=await j('v2/raw/index/'+b);idx.push(d.alts.Parasha.nodes.map(n=>({wholeRef:n.wholeRef,refs:n.refs})))}localStorage.setItem('sm_idx',JSON.stringify(idx))}
- P=[];idx.forEach((ns,bi)=>ns.forEach((n,i)=>P.push({book:BOOKS[bi][0],bi,name:BOOKS[bi][2].split(',')[i]||('פרשה '+(i+1)),whole:n.wholeRef,refs:n.refs})));
-}
-const flat=d=>{const o=[],he=d.he||[];let c=d.sections[0],v=d.sections[1];
+const R="1:1-6:8,6:9-11:32,12:1-17:27,18:1-22:24,23:1-25:18,25:19-28:9,28:10-32:3,32:4-36:43,37:1-40:23,41:1-44:17,44:18-47:27,47:28-50:26;1:1-6:1,6:2-9:35,10:1-13:16,13:17-17:16,18:1-20:23,21:1-24:18,25:1-27:19,27:20-30:10,30:11-34:35,35:1-38:20,38:21-40:38;1:1-5:26,6:1-8:36,9:1-11:47,12:1-13:59,14:1-15:33,16:1-18:30,19:1-20:27,21:1-24:23,25:1-26:2,26:3-27:34;1:1-4:20,4:21-7:89,8:1-12:16,13:1-15:41,16:1-18:32,19:1-22:1,22:2-25:9,25:10-30:1,30:2-32:42,33:1-36:13;1:1-3:22,3:23-7:11,7:12-11:25,11:26-16:17,16:18-21:9,21:10-25:19,26:1-29:8,29:9-30:20,31:1-31:30,32:1-32:52,33:1-34:12".split(';').map(x=>x.split(','));
+async function j(u){const r=await fetch(API+u);if(!r.ok)throw new Error('HTTP '+r.status+' '+u);const d=await r.json();if(d.error)throw new Error(d.error);return d}
+function loadIndex(){P=[];BOOKS.forEach((b,bi)=>b[2].split(',').forEach((name,i)=>P.push({book:b[0],bi,name,whole:b[0]+' '+R[bi][i],refs:null})))}
+async function ensureRefs(i){const p=P[i];if(p.refs)return;
+ try{const d=await j('v2/raw/index/'+p.book),ns=d.alts.Parasha.nodes,k=P.filter(x=>x.bi===p.bi);
+  if(ns.length===k.length)k.forEach((x,n)=>{if(ns[n].refs&&ns[n].refs.length>=7)x.refs=ns[n].refs})}catch(e){}
+ if(!p.refs){const{m}=await loadP(i),n=m.length;p.refs=[];for(let a=0;a<7;a++){const s=m[Math.floor(a*n/7)],e=m[Math.floor((a+1)*n/7)-1];p.refs.push(`${p.book} ${s.c}:${s.v}-${e.c}:${e.v}`)}p.approx=1}}
+const flat=d=>{if(!d.he||!d.he.length)throw new Error('אין טקסט עבור '+d.ref);const o=[],he=d.he;let c=d.sections[0],v=d.sections[1];
  if(Array.isArray(he[0]))he.forEach((ch,i)=>ch.forEach((t,k)=>o.push({c:c+i,v:(i?1:v)+k,t:clean(t)})));
  else he.forEach((t,k)=>o.push({c,v:v+k,t:clean(t)}));return o};
 async function loadP(i){
@@ -117,26 +118,33 @@ async function show(){
  localStorage.setItem('sm_cur',JSON.stringify(cur));
  const p=P[cur.p];$('#ps').value=cur.p;
  $('#ttl').textContent=`פרשת ${p.name} · ${ALN[cur.a]||'עליה '+(cur.a+1)}`;
- $('#ch').innerHTML=p.refs.map((_,i)=>`<button data-a="${i}" class="${i===cur.a?'on':''}">${ALN[i]||i+1}${set.done[cur.p+'-'+i]?' ✓':''}</button>`).join('');
- $('#view').innerHTML='<p class="mut">טוען…</p>';
+ $('#ch').innerHTML='';$('#view').innerHTML='<p class="mut">טוען…</p>';
  try{
+  await ensureRefs(cur.p);if(cur.a>=p.refs.length)cur.a=0;
+  $('#ttl').textContent=`פרשת ${p.name} · ${ALN[cur.a]||'עליה '+(cur.a+1)}`;
+  $('#ch').innerHTML=p.refs.map((_,i)=>`<button data-a="${i}" class="${i===cur.a?'on':''}">${ALN[i]||i+1}${set.done[cur.p+'-'+i]?' ✓':''}</button>`).join('');
+  if(p.approx&&!p.warned){p.warned=1;toast('חלוקת העליות משוערת (לא הצלחתי לטעון את החלוקה המדויקת)')}
   const{m,t}=await loadP(cur.p),[a,b]=range(p.refs[cur.a]),inr=x=>cmp(x,a)>=0&&cmp(x,b)<=0,mv=m.filter(inr),tv=t.filter(inr);
   let h='';
   if(set.verse)h=mv.map(x=>{const y=tv.find(z=>z.c===x.c&&z.v===x.v);return `<div class="sec vh">${vhtml('m1',x)}${vhtml('m2',x)}<div class="t">${y?vhtml('t',y):''}</div></div>`}).join('');
   else h=[['m1','מקרא · קריאה ראשונה',mv,''],['m2','מקרא · קריאה שנייה',mv,''],['t','תרגום אונקלוס',tv,' t']].map(([b,n,l,c])=>`<section class="sec${c}"><h2>${n}</h2>${l.map(x=>vhtml(b,x)).join('')}</section>`).join('');
   $('#view').innerHTML=h;
- }catch(e){$('#view').innerHTML='<p class="mut">שגיאה בטעינת הטקסט. בדוק חיבור לאינטרנט ונסה שוב.</p>'}
+ }catch(e){$('#view').innerHTML=`<p class="mut">שגיאה בטעינת הטקסט: ${e.message||e}<br>בדוק חיבור לאינטרנט.</p><button onclick="show()">נסה שוב</button>`}
 }
 function go(p,a,top=true){cur={p,a};show().then(()=>top&&scrollTo(0,0))}
 function step(d){let{p,a}=cur;a+=d;if(a<0){p=Math.max(0,p-1);a=P[p].refs.length-1}else if(a>=P[p].refs.length){p=Math.min(P.length-1,p+1);a=0}go(p,a)}
 async function today(){
- try{const d=await j('calendars?diaspora='+(set.dia?1:0));
-  const it=d.calendar_items.find(x=>x.title.en==='Parashat Hashavua');
-  const s=it.ref.split('-')[0],i=P.findIndex(p=>p.whole.split('-')[0]===s);
-  if(i<0)throw 0;
-  if(it.ref!==P[i].whole)toast('שבוע של פרשות מחוברות – ללמוד גם את הפרשה הבאה');
-  go(i,Math.min(new Date().getDay(),P[i].refs.length-1));
- }catch{toast('לא הצלחתי לאתר את פרשת השבוע (נדרש אינטרנט)')}
+ try{const n=new Date(),e=new Date(n.getTime()+6*864e5),f=d=>d.toISOString().slice(0,10).length&&`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const r=await fetch(`https://www.hebcal.com/hebcal?v=1&cfg=json&s=on&i=${set.dia?'off':'on'}&start=${f(n)}&end=${f(e)}`);
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const it=(await r.json()).items.find(x=>x.category==='parashat');
+  if(!it)return toast('בשבוע זה אין פרשה רגילה (שבת חג)');
+  const names=it.hebrew.replace(/[\u0591-\u05C7]/g,'').replace('פרשת','').trim().split('-').map(x=>x.trim());
+  const i=P.findIndex(p=>p.name===names[0]);
+  if(i<0)throw new Error('לא נמצאה פרשה: '+names[0]);
+  if(names.length>1)toast('שבוע של פרשות מחוברות – ללמוד גם את '+names.slice(1).join(', '));
+  go(i,n.getDay());
+ }catch(e){toast('שגיאה באיתור פרשת השבוע: '+(e.message||e))}
 }
 $('#view').addEventListener('click',e=>{const b=e.target.closest('.bk');if(!b)return;const el=b.parentElement,id=el.id;
  if(bm&&bm.id===id&&bm.p===cur.p&&bm.a===cur.a){bm=null;localStorage.removeItem('sm_bm');el.classList.remove('on');toast('הסימניה הוסרה');return}
@@ -155,12 +163,10 @@ $('#o-tm').onchange=e=>{set.teamim=e.target.checked;save();show()};
 $('#o-vm').onchange=e=>{set.verse=e.target.checked;save();show()};
 $('#o-di').onchange=e=>{set.dia=e.target.checked;save()};
 $('#off').onclick=async()=>{for(let i=0;i<P.length;i++){$('#offs').textContent=`מוריד… ${i+1}/${P.length}`;try{await loadP(i)}catch{$('#offs').textContent='נעצר – בדוק חיבור';return}}$('#offs').textContent='הכול נשמר ✓';mem={}};
-(async()=>{
- applyTheme();$('#o-tm').checked=set.teamim;$('#o-vm').checked=set.verse;$('#o-di').checked=set.dia;
- try{await loadIndex()}catch{$('#view').innerHTML='<p class="mut">נדרש חיבור לאינטרנט בפעם הראשונה.</p>';return}
- $('#ps').innerHTML=BOOKS.map((b,bi)=>`<optgroup label="${b[1]}">${P.map((p,i)=>p.bi===bi?`<option value="${i}">${p.name}</option>`:'').join('')}</optgroup>`).join('');
- if(cur.p>=P.length)cur={p:0,a:0};show();
-})();
+applyTheme();$('#o-tm').checked=set.teamim;$('#o-vm').checked=set.verse;$('#o-di').checked=set.dia;
+loadIndex();
+$('#ps').innerHTML=BOOKS.map((b,bi)=>`<optgroup label="${b[1]}">${P.map((p,i)=>p.bi===bi?`<option value="${i}">${p.name}</option>`:'').join('')}</optgroup>`).join('');
+if(!P[cur.p])cur={p:0,a:0};show();
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
 </script>
 </body>
