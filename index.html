@@ -136,7 +136,7 @@ const R="1:1-6:8,6:9-11:32,12:1-17:27,18:1-22:24,23:1-25:18,25:19-28:9,28:10-32:
 async function j(u){const r=await fetch(API+u);if(!r.ok)throw new Error('HTTP '+r.status+' '+u);const d=await r.json();if(d.error)throw new Error(d.error);return d}
 function loadIndex(){P=[];BOOKS.forEach((b,bi)=>b[2].split(',').forEach((name,i)=>P.push({book:b[0],bi,name,whole:b[0]+' '+R[bi][i],refs:null})))}
 async function ensureRefs(i){const p=P[i];if(p.refs)return;
- try{const d=await j('v2/raw/index/'+p.book),ns=d.alts.Parasha.nodes,k=P.filter(x=>x.bi===p.bi);
+ try{const d=await j('v2/raw/index/'+p.book),ns=(d.alt_structs||d.alts).Parasha.nodes,k=P.filter(x=>x.bi===p.bi);
   if(ns.length===k.length)k.forEach((x,n)=>{if(ns[n].refs&&ns[n].refs.length>=7)x.refs=ns[n].refs})}catch(e){}
  if(!p.refs){const{m}=await loadP(i),n=m.length;p.refs=[];for(let a=0;a<7;a++){const s=m[Math.floor(a*n/7)],e=m[Math.floor((a+1)*n/7)-1];p.refs.push(`${p.book} ${s.c}:${s.v}-${e.c}:${e.v}`)}p.approx=1}}
 const flat=d=>{if(!d.he||!d.he.length)throw new Error('אין טקסט עבור '+d.ref);const o=[],he=d.he;let c=d.sections[0],v=d.sections[1];
