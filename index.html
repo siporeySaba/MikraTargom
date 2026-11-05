@@ -6,6 +6,8 @@
 <title>שנים מקרא ואחד תרגום</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2f6f6a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Hebrew:wght@400;600&display=swap" rel="stylesheet">
 <link rel="icon" href="icon.svg">
 <link rel="apple-touch-icon" href="icon.svg">
 <style>
@@ -37,6 +39,9 @@ main{max-width:760px;margin:0 auto;padding:12px}
 #st{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
 #st label{display:flex;gap:8px;align-items:center;margin:6px 0}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#000c;color:#fff;padding:8px 14px;border-radius:20px;display:none;z-index:9}
+#jn[hidden]{display:none}
+#jn{background:var(--hl);border:1px solid var(--gold);border-radius:12px;padding:8px 12px;margin:0 0 12px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.pc{white-space:nowrap;font-size:13px;color:var(--mut);align-self:center;padding-inline:4px}
 footer{text-align:center;color:var(--mut);font-size:12px;padding:10px 0 30px}
 </style>
 </head>
@@ -53,6 +58,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:10px 0 30px}
   <label><input type="checkbox" id="o-tm"> הצג טעמי מקרא</label>
   <label><input type="checkbox" id="o-vm"> מצב פסוק־פסוק (מקרא, מקרא, תרגום לכל פסוק)</label>
   <label><input type="checkbox" id="o-di"> חו״ל (פרשת השבוע לפי חו״ל)</label>
+  <button id="rs">🔄 התחל מחזור חדש (איפוס כל הסימונים ✓)</button>
   <button id="off">⬇️ הורד את כל התורה לשימוש ללא אינטרנט</button>
   <div id="offs" class="mut"></div>
  </details>
@@ -64,6 +70,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:10px 0 30px}
  <div class="chips" id="ch"></div>
 </header>
 <main>
+ <div id="jn" hidden></div>
  <div id="view"></div>
  <div class="row" style="justify-content:space-between">
   <button id="prev">→ הקודם</button>
@@ -84,8 +91,10 @@ const BOOKS=[['Genesis','בראשית','בראשית,נח,לך לך,וירא,ח�
 const ALN=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שביעי','מפטיר'];
 const $=s=>document.querySelector(s);
 const load_=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch{return d}};
-const set=Object.assign({fs:24,theme:'auto',teamim:true,verse:false,dia:true,done:{}},load_('sm_set',{}));
+const set=Object.assign({fs:24,theme:'auto',teamim:true,verse:false,dia:false,done:{}},load_('sm_set',{}));
 let bm=load_('sm_bm',null),P=[],cur=load_('sm_cur',{p:0,a:0}),mem={};
+// מחזור הקריאה מתחלף בשמחת תורה (כ״ב/כ״ג תשרי)
+function cycleYear(d=new Date()){try{const pr=new Intl.DateTimeFormat('en-u-ca-hebrew',{day:'numeric',month:'long',year:'numeric'}).formatToParts(d),g=t=>pr.find(x=>x.type===t).value;let y=+g('year');if(g('month')==='Tishri'&&+g('day')<23)y--;return y}catch{return 0}}
 const save=()=>localStorage.setItem('sm_set',JSON.stringify(set));
 const toast=t=>{const e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2800)};
 const heNum=n=>{const T=[[400,'ת'],[300,'ש'],[200,'ר'],[100,'ק'],[90,'צ'],[80,'פ'],[70,'ע'],[60,'ס'],[50,'נ'],[40,'מ'],[30,'ל'],[20,'כ'],[10,'י'],[9,'ט'],[8,'ח'],[7,'ז'],[6,'ו'],[5,'ה'],[4,'ד'],[3,'ג'],[2,'ב'],[1,'א']];let s='';for(const[v,l]of T)while(n>=v){s+=l;n-=v}return s.replace(/יה$/,'טו').replace(/יו$/,'טז')};
@@ -122,7 +131,8 @@ async function show(){
  try{
   await ensureRefs(cur.p);if(cur.a>=p.refs.length)cur.a=0;
   $('#ttl').textContent=`פרשת ${p.name} · ${ALN[cur.a]||'עליה '+(cur.a+1)}`;
-  $('#ch').innerHTML=p.refs.map((_,i)=>`<button data-a="${i}" class="${i===cur.a?'on':''}">${ALN[i]||i+1}${set.done[cur.p+'-'+i]?' ✓':''}</button>`).join('');
+  $('#ch').innerHTML=p.refs.map((_,i)=>`<button data-a="${i}" class="${i===cur.a?'on':''}">${ALN[i]||i+1}${set.done[cur.p+'-'+i]?' ✓':''}</button>`).join('')+`<span class="pc">${p.refs.filter((_,i)=>set.done[cur.p+'-'+i]).length}/${p.refs.length} ✓</span>`;
+  const jn=$('#jn');if(joined&&(cur.p===joined.a||cur.p===joined.b)){const o=cur.p===joined.a?joined.b:joined.a;jn.innerHTML=`<span>השבוע פרשות מחוברות: ${P[joined.a].name}–${P[joined.b].name}</span><button data-jp="${o}">לפרשת ${P[o].name} ←</button>`;jn.hidden=false}else jn.hidden=true;
   if(p.approx&&!p.warned){p.warned=1;toast('חלוקת העליות משוערת (לא הצלחתי לטעון את החלוקה המדויקת)')}
   const{m,t}=await loadP(cur.p),[a,b]=range(p.refs[cur.a]),inr=x=>cmp(x,a)>=0&&cmp(x,b)<=0,mv=m.filter(inr),tv=t.filter(inr);
   let h='';
@@ -132,17 +142,44 @@ async function show(){
  }catch(e){$('#view').innerHTML=`<p class="mut">שגיאה בטעינת הטקסט: ${e.message||e}<br>בדוק חיבור לאינטרנט.</p><button onclick="show()">נסה שוב</button>`}
 }
 function go(p,a,top=true){cur={p,a};show().then(()=>top&&scrollTo(0,0))}
-function step(d){let{p,a}=cur;a+=d;if(a<0){p=Math.max(0,p-1);a=P[p].refs.length-1}else if(a>=P[p].refs.length){p=Math.min(P.length-1,p+1);a=0}go(p,a)}
+async function step(d){let{p,a}=cur;a+=d;
+ try{
+  if(a<0){if(p===0)return toast('זו תחילת התורה');p--;await ensureRefs(p);a=P[p].refs.length-1}
+  else if(a>=P[p].refs.length){if(p===P.length-1)return toast('זה סוף התורה 🎉');p++;a=0}
+ }catch(e){return toast('שגיאה בטעינה – בדוק חיבור לאינטרנט')}
+ go(p,a)}
+// השוואת שמות סלחנית (ניקוד, מקף, רווחים, כתיב מלא/חסר)
+const loose=s=>(s||'').replace(/[֑-ֽֿ-ׇ]/g,'').replace(/[־\-\s'"״׳]/g,'').replace(/[וי]/g,'');
+const startOf=r=>r.split('-')[0];
+let joined=null;
 async function today(){
- try{const n=new Date(),e=new Date(n.getTime()+6*864e5),f=d=>d.toISOString().slice(0,10).length&&`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  const r=await fetch(`https://www.hebcal.com/hebcal?v=1&cfg=json&s=on&i=${set.dia?'off':'on'}&start=${f(n)}&end=${f(e)}`);
+ try{
+  if(set.loc===undefined){set.dia=!confirm('לחשב את פרשת השבוע לפי ארץ ישראל?\n\nאישור = ארץ ישראל\nביטול = חו״ל\n\n(אפשר לשנות בהגדרות)');set.loc=1;save();$('#o-di').checked=set.dia}
+  const n=new Date(),e=new Date(n.getTime()+6*864e5),f=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const r=await fetch(`https://www.hebcal.com/hebcal?v=1&cfg=json&s=on&leyning=on&i=${set.dia?'off':'on'}&start=${f(n)}&end=${f(e)}`);
   if(!r.ok)throw new Error('HTTP '+r.status);
   const it=(await r.json()).items.find(x=>x.category==='parashat');
   if(!it)return toast('בשבוע זה אין פרשה רגילה (שבת חג)');
-  const names=it.hebrew.replace(/[\u0591-\u05C7]/g,'').replace('פרשת','').trim().split('-').map(x=>x.trim());
-  const i=P.findIndex(p=>p.name===names[0]);
-  if(i<0)throw new Error('לא נמצאה פרשה: '+names[0]);
-  if(names.length>1)toast('שבוע של פרשות מחוברות – ללמוד גם את '+names.slice(1).join(', '));
+  // רק טווח הקריאה הראשי (בלי מפטיר מיוחד), ובפורמט מלא: Deuteronomy 32:1-32:52
+  const torah=it.leyning&&it.leyning.torah&&it.leyning.torah.split(/[;,]/)[0].trim().replace(/^(.* (d+):d+-)(d+)$/,'$1$2:$3');
+  let i=-1,j=-1;
+  if(torah){
+   // זיהוי לפי הפסוקים: הפרשה שמתחילה באותו פסוק, ובפרשות מחוברות – גם זו שמסתיימת באותו פסוק
+   const end=torah.split('-')[1];
+   i=P.findIndex(p=>startOf(p.whole)===startOf(torah));
+   if(i>=0){
+    const k=P.findIndex(p=>p.book===P[i].book&&p.whole.endsWith('-'+end));
+    if(k>i)j=k;
+    if(j<0&&P[i].whole===torah){const refs=[1,2,3,4,5,6,7].map(a=>it.leyning[a]).filter(Boolean);if(refs.length===7){P[i].refs=refs;delete P[i].approx}}
+   }
+  }
+  if(i<0){ // גיבוי: לפי השם
+   const h=it.hebrew.replace('פרשת','').trim();
+   i=P.findIndex(p=>loose(p.name)===loose(h));
+   if(i<0){const names=h.split('-').map(x=>x.trim());i=P.findIndex(p=>loose(p.name)===loose(names[0]));if(i>=0&&names[1])j=P.findIndex(p=>loose(p.name)===loose(names[1]))}
+  }
+  if(i<0)throw new Error('לא נמצאה פרשה: '+it.hebrew);
+  joined=j>i?{a:i,b:j}:null;
   go(i,n.getDay());
  }catch(e){toast('שגיאה באיתור פרשת השבוע: '+(e.message||e))}
 }
@@ -152,6 +189,8 @@ $('#view').addEventListener('click',e=>{const b=e.target.closest('.bk');if(!b)re
  document.querySelectorAll('.vs.on').forEach(x=>x.classList.remove('on'));el.classList.add('on');toast('הסימניה נשמרה כאן')});
 $('#gb').onclick=async()=>{if(!bm)return toast('עדיין אין סימניה');cur={p:bm.p,a:bm.a};await show();const el=document.getElementById(bm.id);if(el)el.scrollIntoView({block:'center',behavior:'smooth'})};
 $('#ch').onclick=e=>{const b=e.target.closest('button');if(b)go(cur.p,+b.dataset.a)};
+$('#jn').onclick=e=>{const b=e.target.closest('[data-jp]');if(b)go(+b.dataset.jp,0)};
+$('#rs').onclick=()=>{if(!confirm('לאפס את כל סימוני ✓ ולהתחיל מחזור חדש?'))return;set.done={};set.cycle=cycleYear();save();show();toast('התחלת מחזור חדש')};
 $('#ps').onchange=e=>go(+e.target.value,0);
 $('#today').onclick=today;$('#prev').onclick=()=>step(-1);$('#next').onclick=()=>step(1);
 $('#done').onclick=()=>{const k=cur.p+'-'+cur.a;set.done[k]=!set.done[k];save();toast(set.done[k]?'כל הכבוד! 🎉':'סומן כלא הושלם');if(set.done[k])step(1);else show()};
@@ -163,6 +202,7 @@ $('#o-tm').onchange=e=>{set.teamim=e.target.checked;save();show()};
 $('#o-vm').onchange=e=>{set.verse=e.target.checked;save();show()};
 $('#o-di').onchange=e=>{set.dia=e.target.checked;save()};
 $('#off').onclick=async()=>{for(let i=0;i<P.length;i++){$('#offs').textContent=`מוריד… ${i+1}/${P.length}`;try{await loadP(i)}catch{$('#offs').textContent='נעצר – בדוק חיבור';return}}$('#offs').textContent='הכול נשמר ✓';mem={}};
+{const cy=cycleYear();if(cy){if(!set.cycle)set.cycle=cy;else if(set.cycle!==cy){set.done={};set.cycle=cy;setTimeout(()=>toast('מחזור קריאה חדש – הסימונים אופסו'),800)}save()}}
 applyTheme();$('#o-tm').checked=set.teamim;$('#o-vm').checked=set.verse;$('#o-di').checked=set.dia;
 loadIndex();
 $('#ps').innerHTML=BOOKS.map((b,bi)=>`<optgroup label="${b[1]}">${P.map((p,i)=>p.bi===bi?`<option value="${i}">${p.name}</option>`:'').join('')}</optgroup>`).join('');
