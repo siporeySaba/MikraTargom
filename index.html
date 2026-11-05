@@ -7,54 +7,83 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2f6f6a">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Hebrew:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Hebrew:wght@400;600&family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="icon.svg">
 <link rel="apple-touch-icon" href="icon.svg">
 <style>
-:root{--bg:#f7f3ea;--card:#fffdf8;--ink:#2b2a28;--mut:#7a746a;--acc:#2f6f6a;--gold:#c9a24b;--line:#e6dfcf;--hl:#fff1c2;--tg:#7a4b2a;--fs:24px}
-[data-t=dark]{--bg:#15181b;--card:#1e2226;--ink:#e9e4d8;--mut:#9a9488;--acc:#6fc2b8;--gold:#d9b45f;--line:#2e343a;--hl:#4a3f1c;--tg:#e0b890}
+:root{--bg:#f6f1e7;--card:#fffdf8;--card2:#fbf6ec;--ink:#2b2a28;--mut:#857e72;--acc:#2f6f6a;--acc2:#24524e;--gold:#c09a45;--line:#e8e0cf;--hl:#fff0bf;--tg:#7a4b2a;--tgbg:#fbf4ea;--ok:#3f8f5a;--okbg:#e4f2e7;--sh:0 1px 2px #3b2f1a0d,0 6px 20px #3b2f1a12;--fs:24px;color-scheme:light}
+[data-t=dark]{--bg:#13161a;--card:#1c2024;--card2:#20252a;--ink:#ece6d9;--mut:#9c9588;--acc:#6fc2b8;--acc2:#9fdcd4;--gold:#d9b45f;--line:#2d333a;--hl:#4a3f1c;--tg:#e3bd94;--tgbg:#211d19;--ok:#6fcf8f;--okbg:#1d3326;--sh:0 1px 2px #0005,0 6px 20px #0004;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"Segoe UI",Arial,sans-serif;transition:background .2s}
-header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:8px 12px;display:flex;flex-direction:column;gap:8px}
-.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-h1{font-size:17px;margin:0;color:var(--acc);flex:1}
-button,select{font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:6px 10px;cursor:pointer}
-button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
-select{flex:1;min-width:0}
-.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
-.chips button{white-space:nowrap;border-radius:20px;font-size:14px}
-.chips button.on{background:var(--gold);color:#000;border-color:var(--gold)}
-main{max-width:760px;margin:0 auto;padding:12px}
-.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px 16px 14px;margin:0 0 14px;box-shadow:0 2px 8px #0000000a}
-.sec h2{font-size:15px;color:var(--acc);border-bottom:2px solid var(--gold);display:inline-block;padding-bottom:2px}
-.sec.t h2{color:var(--tg);border-color:var(--tg)}
-.vs{font-family:"Taamey David CLM","SBL Hebrew","Ezra SIL","Noto Serif Hebrew",David,serif;font-size:var(--fs);line-height:2.1;margin:2px 0;padding:0 4px;border-radius:8px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Heebo,system-ui,"Segoe UI",Arial,sans-serif;transition:background .2s;-webkit-tap-highlight-color:transparent}
+button,select{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:8px 12px;cursor:pointer;transition:background .15s,border-color .15s,transform .1s}
+button:active{transform:scale(.97)}
+button.p{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:600}
+[data-t=dark] button.p{color:#10201e}
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));display:flex;flex-direction:column;gap:10px}
+.hd,header>.row,.chips,#st{max-width:760px;width:100%;margin:0 auto}
+.hd{display:flex;align-items:center;gap:6px}
+.ttlw{flex:1;min-width:0}
+.app{font-size:12px;color:var(--mut);letter-spacing:.2px}
+h1{font-family:"Frank Ruhl Libre","Noto Serif Hebrew",serif;font-size:20px;line-height:1.25;font-weight:700;margin:0;color:var(--acc2)}
+.ib{width:38px;height:38px;padding:0;display:grid;place-items:center;font-size:15px;font-weight:700;border-radius:11px}
+.row{display:flex;gap:8px;align-items:center}
+select{flex:1;min-width:0;appearance:none;-webkit-appearance:none;font-weight:600;padding-inline-start:12px;padding-inline-end:34px;background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);background-position:left 18px center,left 13px center;background-size:5px 5px;background-repeat:no-repeat}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{white-space:nowrap;border-radius:999px;font-size:14px;padding:6px 13px;background:var(--card2)}
+.chips button.dn{background:var(--okbg);color:var(--ok);border-color:transparent}
+.chips button.on{background:var(--gold);color:#1d1606;border-color:var(--gold);font-weight:700}
+.pc{white-space:nowrap;font-size:13px;color:var(--mut);align-self:center;padding-inline:6px;margin-inline-start:auto}
+#st{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:6px 14px 12px}
+#st summary{display:none}
+#st label{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+#st input[type=checkbox]{appearance:none;-webkit-appearance:none;flex-shrink:0;width:42px;height:24px;border-radius:99px;background:var(--line);position:relative;cursor:pointer;transition:background .2s;margin:0}
+#st input[type=checkbox]::after{content:"";position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:right .2s}
+#st input[type=checkbox]:checked{background:var(--acc)}
+#st input[type=checkbox]:checked::after{right:21px}
+#st button{display:block;width:100%;margin-top:10px;text-align:center}
+#offs{margin-top:6px;font-size:13px}
+main{max-width:760px;margin:0 auto;padding:14px 14px 96px}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px 18px 16px;margin:0 0 16px;box-shadow:var(--sh)}
+.sec h2{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--acc);margin:6px 0 4px;letter-spacing:.3px}
+.sec h2::before,.sec h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.7}
+.sec.t{background:var(--tgbg)}
+.sec.t h2{color:var(--tg)}
+.vs{font-family:"Taamey David CLM","SBL Hebrew","Ezra SIL","Noto Serif Hebrew",David,serif;font-size:var(--fs);line-height:2.05;margin:2px 0;padding:0 6px;border-radius:10px;transition:background .3s}
 .t .vs{color:var(--tg)}
-.vs.on{background:var(--hl)}
-.n{color:var(--gold);font-size:.6em;margin-inline:4px}
-.bk{padding:0 4px;font-size:.55em;opacity:.35;border:0;background:none}
+.vs.on{background:var(--hl);box-shadow:inset -3px 0 0 var(--gold)}
+.n{display:inline-block;color:var(--gold);font-family:Heebo,sans-serif;font-size:.5em;font-weight:700;margin-inline:2px 6px;vertical-align:.35em}
+.bk{padding:0 2px;font-size:.5em;opacity:.25;border:0;background:none;vertical-align:.4em}
 .vs.on .bk,.bk:hover{opacity:1}
-.vh{border-bottom:1px dashed var(--line);padding:4px 0}
+.sec.vh{padding:8px 16px}
+.vh .t{border-top:1px dashed var(--line);margin-top:4px;padding-top:2px}
 .mut{color:var(--mut)}
-#st{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
-#st label{display:flex;gap:8px;align-items:center;margin:6px 0}
-#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#000c;color:#fff;padding:8px 14px;border-radius:20px;display:none;z-index:9}
 #jn[hidden]{display:none}
-#jn{background:var(--hl);border:1px solid var(--gold);border-radius:12px;padding:8px 12px;margin:0 0 12px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.pc{white-space:nowrap;font-size:13px;color:var(--mut);align-self:center;padding-inline:4px}
-footer{text-align:center;color:var(--mut);font-size:12px;padding:10px 0 30px}
+#jn{background:var(--hl);border:1px solid var(--gold);border-radius:14px;padding:10px 14px;margin:0 0 14px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-weight:600}
+#jn button{background:var(--card)}
+nav.bot{position:fixed;bottom:0;left:0;right:0;z-index:5;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 14px;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+nav.bot .row{max-width:760px;margin:0 auto}
+nav.bot button{min-height:46px}
+nav.bot #done{flex:1;font-size:16px}
+#done.dn{background:var(--okbg);color:var(--ok);border-color:var(--ok)}
+#toast{position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#1f1d1a;color:#fff;padding:10px 16px;border-radius:12px;display:none;z-index:9;box-shadow:0 8px 24px #0003;max-width:calc(100vw - 32px);width:max-content;text-align:center}
+footer{text-align:center;color:var(--mut);font-size:12px;padding:0 0 100px}
 </style>
 </head>
 <body>
 <header>
- <div class="row">
-  <h1 id="ttl">שנים מקרא ואחד תרגום</h1>
-  <button id="dm" title="מצב כהה/בהיר">🌓</button>
-  <button id="fm" title="הקטן">א−</button>
-  <button id="fp" title="הגדל">א+</button>
-  <button id="sb" title="הגדרות">⚙️</button>
+ <div class="hd">
+  <div class="ttlw">
+   <div class="app">שנים מקרא ואחד תרגום</div>
+   <h1 id="ttl">שנים מקרא ואחד תרגום</h1>
+  </div>
+  <button id="fm" class="ib" title="הקטן גופן">א−</button>
+  <button id="fp" class="ib" title="הגדל גופן">א+</button>
+  <button id="dm" class="ib" title="מצב כהה/בהיר">🌓</button>
+  <button id="sb" class="ib" title="הגדרות">⚙️</button>
  </div>
  <details id="st" hidden>
+  <summary>הגדרות</summary>
   <label><input type="checkbox" id="o-tm"> הצג טעמי מקרא</label>
   <label><input type="checkbox" id="o-vm"> מצב פסוק־פסוק (מקרא, מקרא, תרגום לכל פסוק)</label>
   <label><input type="checkbox" id="o-di"> חו״ל (פרשת השבוע לפי חו״ל)</label>
@@ -63,21 +92,23 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:10px 0 30px}
   <div id="offs" class="mut"></div>
  </details>
  <div class="row">
-  <select id="ps"></select>
+  <select id="ps" aria-label="בחירת פרשה"></select>
   <button class="p" id="today">📅 היום</button>
-  <button id="gb">🔖 סימניה</button>
+  <button id="gb" class="ib" title="עבור לסימניה">🔖</button>
  </div>
  <div class="chips" id="ch"></div>
 </header>
 <main>
  <div id="jn" hidden></div>
  <div id="view"></div>
- <div class="row" style="justify-content:space-between">
+</main>
+<nav class="bot">
+ <div class="row">
   <button id="prev">→ הקודם</button>
   <button class="p" id="done">סיימתי ✓</button>
   <button id="next">הבא ←</button>
  </div>
-</main>
+</nav>
 <footer>הטקסט נטען מ־Sefaria.org ונשמר במכשיר לקריאה ללא חיבור</footer>
 <div id="toast"></div>
 <script>
@@ -131,7 +162,8 @@ async function show(){
  try{
   await ensureRefs(cur.p);if(cur.a>=p.refs.length)cur.a=0;
   $('#ttl').textContent=`פרשת ${p.name} · ${ALN[cur.a]||'עליה '+(cur.a+1)}`;
-  $('#ch').innerHTML=p.refs.map((_,i)=>`<button data-a="${i}" class="${i===cur.a?'on':''}">${ALN[i]||i+1}${set.done[cur.p+'-'+i]?' ✓':''}</button>`).join('')+`<span class="pc">${p.refs.filter((_,i)=>set.done[cur.p+'-'+i]).length}/${p.refs.length} ✓</span>`;
+  $('#ch').innerHTML=p.refs.map((_,i)=>`<button data-a="${i}" class="${i===cur.a?'on':''}${set.done[cur.p+'-'+i]?' dn':''}">${ALN[i]||i+1}${set.done[cur.p+'-'+i]?' ✓':''}</button>`).join('')+`<span class="pc">${p.refs.filter((_,i)=>set.done[cur.p+'-'+i]).length}/${p.refs.length} ✓</span>`;
+  {const dn=!!set.done[cur.p+'-'+cur.a],b=$('#done');b.classList.toggle('dn',dn);b.textContent=dn?'✓ הושלם (בטל)':'סיימתי ✓'}
   const jn=$('#jn');if(joined&&(cur.p===joined.a||cur.p===joined.b)){const o=cur.p===joined.a?joined.b:joined.a;jn.innerHTML=`<span>השבוע פרשות מחוברות: ${P[joined.a].name}–${P[joined.b].name}</span><button data-jp="${o}">לפרשת ${P[o].name} ←</button>`;jn.hidden=false}else jn.hidden=true;
   if(p.approx&&!p.warned){p.warned=1;toast('חלוקת העליות משוערת (לא הצלחתי לטעון את החלוקה המדויקת)')}
   const{m,t}=await loadP(cur.p),[a,b]=range(p.refs[cur.a]),inr=x=>cmp(x,a)>=0&&cmp(x,b)<=0,mv=m.filter(inr),tv=t.filter(inr);
